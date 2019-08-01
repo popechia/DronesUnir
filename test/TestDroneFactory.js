@@ -73,7 +73,10 @@ contract("DroneFactory", async accounts => {
     let resultTX = await df.reserveDrone({ from: accounts[1] });
     await truffleAssert.eventEmitted(resultTX, "stockAvaliable");
   });
-
+  
+  it("Destruct no owner", async () => {
+    await truffleAssert.reverts(df.destroyFactory({ from: accounts[1] }), "Only owner");
+  });
 
 
 });
