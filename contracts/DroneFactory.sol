@@ -5,14 +5,19 @@ import "./Drone.sol";
 contract DroneFactory {
     // Mapping que servirá para llevar referencia de a que empresas se ha vendido qué drones
     uint constant DRONE_PRICE = 10 wei;
+    uint128 constant DRONE_MAXHEIGHT= 100;
+    uint128 constant DRONE_MINHEIGHT = 10;
+    uint128 constant DRONE_RANGE = 100;
+    uint128 constant DRONE_STOCK = 10;
+
 
     mapping(address => address[]) dronAsset;
-    address[10] reservedDrones;
+    address[DRONE_STOCK] reservedDrones;
     uint256 lastId;
     uint8 counterStock;
     uint8 counterReserved;
     address owner ;
-    address[10] stockDrones;
+    address[DRONE_STOCK] stockDrones;
 
     event stockAvaliable (uint id) ;
     event droneDeployed (address drone,address owner);
@@ -40,7 +45,7 @@ contract DroneFactory {
     }
 
     function makeDrones() private {
-        for(;counterStock<10;counterStock++) {
+        for(;counterStock<DRONE_STOCK;counterStock++) {
             stockDrones[counterStock] = makeDrone();
             Drone dron = Drone(stockDrones[counterStock]);
             emit stockAvaliable(dron.getId());
@@ -49,8 +54,9 @@ contract DroneFactory {
 
     function makeDrone() private returns(address) {
         lastId++;
-        Drone newDron = new Drone(lastId);
-        return address(newDron);
+        Drone newDrone = new Drone(lastId);
+        newDrone.initialize(DRONE_MAXHEIGHT,DRONE_MINHEIGHT,DRONE_RANGE);
+        return address(newDrone);
     }
 
     function getStockDrone() private returns(address) {

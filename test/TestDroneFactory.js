@@ -6,7 +6,6 @@ contract("DroneFactory", async accounts => {
   let price = 10;
 
   beforeEach(async () => {
-    //df = await DroneFactory.deployed();
     df = await DroneFactory.new({ from: accounts[0] });
     stock = await df.getStock.call({ from: accounts[0] });
     assert.equal(
