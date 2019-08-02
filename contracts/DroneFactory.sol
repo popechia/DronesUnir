@@ -69,10 +69,10 @@ contract DroneFactory {
     function reserveDrone () public {
         if (counterStock>0) {
             Drone dron = Drone(stockDrones[counterStock-1]);
-            emit stockAvaliable(dron.getId()); 
+            emit stockAvaliable(dron.getId());
         }
         else {
-            emit droneReserved(msg.sender); 
+            emit droneReserved(msg.sender);
             //makeDrones();
         }
     }
