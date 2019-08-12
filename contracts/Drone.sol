@@ -6,6 +6,8 @@ contract Drone {
     uint128 private minHeight;
     uint128 private range;
     uint256 private fabricationCost;
+    bool[5] public pestList;
+    uint private currentPlot;
 
     constructor (uint256 _id) public {
         id = _id;
@@ -13,6 +15,7 @@ contract Drone {
         maxHeight = 100;
         minHeight = 10;
         range = 100;
+        currentPlot = 1;
     }
 
     function initialize (uint128 _maxHeight,uint128 _minHeight,uint128 _range) public {
@@ -37,4 +40,21 @@ contract Drone {
     function getRange() public view returns(uint128) {
         return range;
     }
+
+    function validPest(uint _pest) public view returns (bool) {
+        return pestList[_pest];
+    }
+
+    function addPest(uint _pest) public {
+        pestList[_pest] = true;
+    }
+
+    function removePest(uint _pest) public {
+        pestList[_pest] = false;
+    }
+
+    function getCurrentPlot() public view returns (uint) {
+        return currentPlot;
+    }
+
 }
