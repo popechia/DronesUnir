@@ -1,48 +1,50 @@
-const Drone = artifacts.require("Drone");
+const Plot = artifacts.require("Plot");
 const truffleAssert = require("truffle-assertions");
 
-contract("Drone", async accounts => {
-    let drone1;
-    let drone2;
-    let price = 10;
+contract("Plot", async accounts => {
+    let plot;
 
     beforeEach(async () => {
-        drone1 = await Drone.new(1);
-        await drone1.initialize(100, 10, 1000);
-        drone2 = await Drone.new(2);
-        await drone2.initialize(100, 10, 1000);
+        plot = await Plot.new(1);
+        await plot.initialize(100, 1000, 10);
     });
 
     afterEach(async () => {
     });
 
     it("Validate Id", async () => {
-        assert.equal(await drone1.getId(), 1, "Invalid id");
+        assert.equal(await plot.getId(), 1, "Invalid id");
     });
 
-    it("Different drones, different ids", async () => {
-        assert.notEqual(await drone1.getId(), await drone2.getId(), "Ids invalid");
+    it("Validate surface", async () => {
+        assert.equal(await plot.getSurface(), 100, "Invalid surface");
     });
-
+    /*
+        it("Different drones, different ids", async () => {
+            assert.notEqual(await drone1.getId(), await drone2.getId(), "Ids invalid");
+        });
+    */
     it("Max Height", async () => {
-        let height = await drone1.getMaxHeight();
+        let height = await plot.getMaxHeight();
         assert.isAtLeast(height.toNumber(), 0, "Max Height less than 0");
     });
 
     it("Min Height", async () => {
-        let height = await drone1.getMinHeight();
+        let height = await plot.getMinHeight();
         assert.isAtLeast(height.toNumber(), 0, "Min Height less than 0");
     });
 
-    it("Max Height at least min height", async () => {
+    /*it("Max Height at least min height", async () => {
         let height1 = await drone1.getMaxHeight();
         let height2 = await drone1.getMinHeight();
         assert.isAtLeast(height1.toNumber(), height2.toNumber(), "Max Height less than Min");
     });
-    it("Max Height less than min : reverted", async () => {
-        await truffleAssert.reverts(drone2.initialize(1, 10, 10), "MaxHeight less than minHeight");
+    */
+    it("MaxHeight negative: reverted", async () => {
+        await truffleAssert.reverts(plot.initialize(10, 1, 10), "MaxHeight less than minHeight");
     });
 
+    /*
     it("Range", async () => {
         let range = await drone1.getRange();
         assert.isAtLeast(range.toNumber(), 0, "Range less than 0");
@@ -61,5 +63,5 @@ contract("Drone", async accounts => {
     it("Initial current plot equal 1", async () => {
         let currentPlot = await drone1.getCurrentPlot();
         assert.equal(currentPlot.toNumber(),1,"Invalid initial Plot");
-    });
+    });*/
 });

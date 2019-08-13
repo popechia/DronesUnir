@@ -1,11 +1,8 @@
 pragma solidity >=0.4.21 <0.6.0;
 
-contract RegProp {
-    struct Plot {
-        uint id;
-        uint surface;
-    }
+import "./Plot.sol";
 
+contract RegProp {
 //    mapping(address => uint[]) private plotsByOwner;
     address[] private plotsIds;
     mapping(uint => Plot) private plotsStock;
@@ -28,10 +25,8 @@ contract RegProp {
 
     function createPlot(uint _surface, address _owner) internal returns(uint) {
         idIndex = plotsIds.push(_owner)-1;
-        Plot memory _plot = Plot ({
-            id: idIndex,
-            surface: _surface
-        });
+        Plot _plot = new Plot (idIndex);
+        _plot.initialize(_surface,100,0);
         //plotsByOwner[_owner].push(idIndex);
         plotsStock[idIndex] = _plot;
         ownershipPlotsCount[_owner]++;
@@ -57,7 +52,6 @@ contract RegProp {
                 plots[j++] = i;
             }
         }
-        //plots = plotsByOwner[owner];
         return plots;
     }
 }

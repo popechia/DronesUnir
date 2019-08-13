@@ -1,9 +1,17 @@
 const Drone = artifacts.require("./Drone.sol");
+const Plot = artifacts.require("./Plot.sol");
+const Crop = artifacts.require("./Crop.sol");
+const Constants = artifacts.require("../libraries/Constants.sol");
 const DroneFactory = artifacts.require("./DroneFactory.sol");
 const RegProp = artifacts.require("./RegProp.sol");
 
-module.exports = function(deployer) {
+module.exports = function (deployer) {
   deployer.deploy(DroneFactory);
-  deployer.deploy(Drone,1);
+  deployer.deploy(Drone, 1);
   deployer.deploy(RegProp);
+  deployer.deploy(Plot, 1);
+  deployer.deploy(Constants).then(() => {
+    deployer.deploy(Crop, "millo");
+  });
+  deployer.link(Constants,Crop);
 };

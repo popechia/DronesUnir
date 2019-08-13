@@ -19,6 +19,7 @@ contract Drone {
     }
 
     function initialize (uint128 _maxHeight,uint128 _minHeight,uint128 _range) public {
+        require (_maxHeight >= _minHeight,"MaxHeight less than minHeight");
         fabricationCost = 100;
         maxHeight = _maxHeight;
         minHeight = _minHeight;
