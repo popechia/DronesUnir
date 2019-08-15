@@ -2,7 +2,7 @@ const Crop = artifacts.require("Crop");
 const Constants = artifacts.require("Constants");
 //const truf
 
-fleAssert = require("truffle-assertions");
+truffleAssert = require("truffle-assertions");
 
 contract("Crop", async accounts => {
     let crop;
@@ -26,6 +26,21 @@ contract("Crop", async accounts => {
     it("Validate pest", async () => {
         await crop.addPest(_pest);
         assert(await crop.pestAdmitted(_pest),"Pest not admitted");
+    });
+
+    it("Validate all pests", async () => {
+        await crop.addPest(_pest);
+        assert(await crop.pestAdmitted(_pest),"Pest not admitted");
+        _pest = (await crop.getNitrito()).toNumber(); 
+        await crop.addPest(_pest);
+        assert(await crop.pestAdmitted(_pest),"Pest not admitted");
+        _pest = (await crop.getSulfito()).toNumber(); 
+        await crop.addPest(_pest);
+        assert(await crop.pestAdmitted(_pest),"Pest not admitted");
+    });
+    
+    it("Invalid pest", async () => {
+        await truffleAssert.reverts(crop.addPest(40), "Invalid Pest");
     });
 
     it("Remove pest", async () => {

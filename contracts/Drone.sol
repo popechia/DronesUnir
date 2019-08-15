@@ -58,4 +58,8 @@ contract Drone {
         return currentPlot;
     }
 
+    function getMetadata() public view returns (bytes memory _metadata) {
+        _metadata = abi.encodePacked(id,fabricationCost,maxHeight,minHeight,range,currentPlot);
+    }
+
 }
