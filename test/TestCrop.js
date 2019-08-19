@@ -1,5 +1,4 @@
 const Crop = artifacts.require("Crop");
-const Constants = artifacts.require("Constants");
 //const truf
 
 truffleAssert = require("truffle-assertions");

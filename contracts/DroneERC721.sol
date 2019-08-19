@@ -9,7 +9,7 @@ contract DroneERC721 is ERC721Full, Ownable {
 
     using Counters for Counters.Counter;
     Counters.Counter private _tokenIds;
-    mapping( uint256 => Drone) drones;
+    mapping( uint256 => address) drones;
     uint constant DRONE_PRICE = 10 wei;
     uint128 constant DRONE_MAXHEIGHT= 100;
     uint128 constant DRONE_MINHEIGHT = 10;
@@ -26,13 +26,22 @@ contract DroneERC721 is ERC721Full, Ownable {
         newDrone.initialize(DRONE_MAXHEIGHT,DRONE_MINHEIGHT,DRONE_RANGE);
         _mint(customer, newItemId);
         _setTokenURI(newItemId, string(newDrone.getMetadata()));
-        drones[newItemId] = newDrone;
+        drones[newItemId] = address(newDrone);
         return newItemId;
     }
 
+    function safeTransferFrom (address _customer1,address _customer2,uint256 _droneId) public {
+        super.safeTransferFrom(_customer1,_customer2,_droneId);
+    }
+
+    function destroyDrone(uint256 _id) public {
+        drones[_id] = address(0);
+        _burn(_id);
+    }
+
     function getDrone (uint256 _id) public view returns (Drone){
-        require(drones[_id].getId() != 0, "Drone not found");
-        return (drones[_id]);
+        require(drones[_id] != address(0), "Drone not found");
+        return (Drone(drones[_id]));
     }
 
     function destroyFactory() public onlyOwner {
