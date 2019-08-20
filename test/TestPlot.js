@@ -5,17 +5,17 @@ contract("Plot", async accounts => {
     let plot;
 
     beforeEach(async () => {
-        plot = await Plot.new(1);
+        plot = await Plot.new();
         await plot.initialize(100, 1000, 10);
     });
 
     afterEach(async () => {
     });
-
+/*
     it("Validate Id", async () => {
         assert.equal(await plot.getId(), 1, "Invalid id");
     });
-
+*/
     it("Validate surface", async () => {
         assert.equal(await plot.getSurface(), 100, "Invalid surface");
     });

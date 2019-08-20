@@ -32,10 +32,6 @@ contract("Testing FumigationCO", async accounts => {
         await truffleAssert.reverts(_company1.registerDrone(_droneId),"Drone already registered");
     });
 
-    it("Register order", async () => {
-        //_company1.registerOrder(_plot2,PEST_NITRATO);
-    });
-
     it("Unregister drone", async () => {
         await truffleAssert.reverts(_company1.unregisterDrone(0));
     });
@@ -44,10 +40,10 @@ contract("Testing FumigationCO", async accounts => {
         let _total = await _company1.getTotalDrones();
         await _company1.unregisterDrone(_droneId);
         assert.equal (_total.toNumber()-1, (await _company1.getTotalDrones()).toNumber(),"incorrect");
-    });    
+    });   
+
     it("Transfer drone", async () => {
         let _company2 = await FumigationCO.new("Fumigation2");
-
     } );
 
 
