@@ -59,7 +59,35 @@ contract("Drone", async accounts => {
     });
 
     it("Initial current plot equal 1", async () => {
-        let currentPlot = await drone1.getCurrentPlot();
+        let currentPlot = await drone1.getCurrentPos();
         assert.equal(currentPlot.toNumber(),1,"Invalid initial Plot");
+    });
+    it("Move to pos", async () => {
+        assert.equal(await drone1.getCurrentPos(),1,"Invalid position");
+        await drone1.moveTo(3);
+        assert.equal(await drone1.getCurrentPos(),3,"Invalid position");
+    });
+    it("Move too far away", async () => {
+        await drone2.initialize (10,1,10);
+        await truffleAssert.reverts(drone2.moveTo(100), "Not enough range");
+    });
+
+    it("Move too far away to return", async () => {
+        await drone2.initialize (10,1,10);
+        await truffleAssert.reverts(drone2.moveTo(6), "Insufficient autonomy to return");
+        let currentPlot = await drone2.getCurrentPos();
+        assert.equal(currentPlot.toNumber(),1,"Invalid Plot");
+    });
+
+    it("Calculate distance to pos", async () => {
+        assert.equal(await drone1.getCurrentPos(),1,"Invalid position");
+        let _distance = await drone1.calculateDistanceToPos(3);
+        assert.equal(_distance.toNumber(),2,"Calculated distance incorrect");
+    });
+
+    it("Calculate cost to pos", async () => {
+        assert.equal(await drone1.getCurrentPos(),1,"Invalid position");
+        let _cost = await drone1.calculateCostToPos(3);
+        assert.equal(_cost.toNumber(),2,"Calculated cost incorrect");
     });
 });

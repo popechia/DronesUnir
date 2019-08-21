@@ -2,7 +2,7 @@ const RegProp = artifacts.require("RegProp");
 const Plot = artifacts.require("PlotMock");
 const truffleAssert = require("truffle-assertions");
 
-contract("RegProp", async accounts => {
+contract("Property registration", async accounts => {
 
     let regProp;
     let accountOwner = accounts[0];
@@ -30,7 +30,7 @@ contract("RegProp", async accounts => {
     });
 
     it("Get plots owner", async () => {
-        let resultTX = await regProp.transfer(accountCreator, accountOwner, 1);
+        let resultTX = await regProp.safeTransferFrom(accountCreator, accountOwner, 1, { from: accountCreator });
         let totalPlots = await regProp.getPlotsOwner(accountOwner);
         let totalPlots0 = await regProp.getPlotsOwner(accountCreator);
         assert.isAtLeast(totalPlots.length, 1, "No plots for owner");
@@ -46,11 +46,11 @@ contract("RegProp", async accounts => {
     });
 
     it("Transfer from no owner", async () => {
-        await truffleAssert.reverts(regProp.transfer(accountNoOwner, accountOwner, 1), "Only owner");
+        await truffleAssert.reverts(regProp.safeTransferFrom(accountNoOwner, accountOwner, 1));
     });
 
     it("Transfer from no owner", async () => {
-        await truffleAssert.reverts(regProp.transfer(accountNoOwner, accountOwner, 1), "Only owner");
+        await truffleAssert.reverts(regProp.safeTransferFrom(accountNoOwner, accountOwner, 1));
     });
 
     it("Get Plot by id", async () => {
@@ -60,5 +60,9 @@ contract("RegProp", async accounts => {
 
     it("Get Plot by invalid id", async () => {
         await truffleAssert.reverts(regProp.getPlot(1000), "Invalid plot ID");
+    });
+
+    it("Validate owner", async () => {
+        assert.equal(await regProp.ownerOf(_idPlot), accountCreator, "Owner incorrect");
     });
 });

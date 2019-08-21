@@ -4,7 +4,7 @@ import "./Drone.sol";
 
 contract DroneFactory {
     // Mapping que servirá para llevar referencia de a que empresas se ha vendido qué drones
-    uint constant DRONE_PRICE = 10 wei;
+  /*  uint constant DRONE_PRICE = 10 wei;
     uint128 constant DRONE_MAXHEIGHT= 100;
     uint128 constant DRONE_MINHEIGHT = 10;
     uint128 constant DRONE_RANGE = 100;
@@ -90,5 +90,5 @@ contract DroneFactory {
     function getStock() public view returns(uint8) {
         return counterStock;
     }
-
+*/
 }
