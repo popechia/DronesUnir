@@ -24,6 +24,7 @@ contract RegProp is Ownable, ERC721Full {
         uint256 newItemId = _idIndex.current();
         _mint(_owner, newItemId);
         plotsStock[newItemId] = _plot;
+        _setTokenURI(newItemId, string(abi.encodePacked(newItemId)));
         emit plotRegistered(_owner,newItemId);
         return newItemId;
     }
