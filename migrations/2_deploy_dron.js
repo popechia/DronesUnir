@@ -5,15 +5,15 @@ const DroneFactory = artifacts.require("./DroneFactory.sol");
 const RegProp = artifacts.require("./RegProp.sol");
 const DroneERC721 = artifacts.require("./DroneERC721.sol");
 const FumigationCO = artifacts.require("./FumigationCO.sol");
-const FumigationCOMock = artifacts.require("./FumigationCOMock.sol");
+//const FumigationCOMock = artifacts.require("./FumigationCOMock.sol");
 
 module.exports = function (deployer) {
   deployer.deploy(DroneFactory);
   deployer.deploy(Drone, 1);
-  deployer.deploy(RegProp);
+  deployer.deploy(RegProp,"Registro de A Coruña");
   deployer.deploy(Plot, 1);
   deployer.deploy(DroneERC721);
   deployer.deploy(FumigationCO,"FumigationCo");
-  deployer.deploy(FumigationCOMock,"aa");
+  //deployer.deploy(FumigationCOMock,"aa");
   deployer.deploy(Crop, "millo");
 };

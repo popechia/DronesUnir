@@ -12,7 +12,7 @@ contract RegProp is Ownable, ERC721Full {
     event plotTransfer(address from, address to, uint256 plotId);
     event plotRegistered(address to,uint256 plotId);
 
-    constructor () ERC721Full("Registro de la propiedad", "PROP") public {
+    constructor (string memory name) ERC721Full(name, "PROP") public {
     }
 
     function getTotalPlots() public view returns(uint)  {

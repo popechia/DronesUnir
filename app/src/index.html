@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>MetaCoin | Truffle Webpack Demo w/ Frontend</title>
+    <title>Drone Management</title>
   </head>
   <style>
     input {
@@ -10,9 +10,23 @@
     }
   </style>
   <body>
-    <h1>MetaCoin — Example Truffle Dapp</h1>
-    <p>You have <strong class="balance">loading...</strong> META</p>
+    <h1>Drones - TFE UNIR</h1>
+    <p>Registradas <strong class="balance">loading...</strong> parcelas en <strong class="registro">Registro</strong></p>
 
+    <p>Generadas <strong class="plot">loading...</strong> parcelas en el registro de la propiedad</p>
+
+    <select id="plotsList">
+
+    </select>
+    <label for="receiver">To address:</label>
+    <input
+      type="text"
+      id="receiver"
+      placeholder="e.g. 0x93e66d9baea28c17d9fc393b53e3fbdd76899dae"
+    />
+    <button onclick="App.transferPlot()">Transfer Plot</button>
+
+<!--
     <h1>Send MetaCoin</h1>
 
     <label for="amount">Amount:</label>
@@ -25,13 +39,13 @@
       placeholder="e.g. 0x93e66d9baea28c17d9fc393b53e3fbdd76899dae"
     />
 
-    <!--<button onclick="App.sendCoin()">Send MetaCoin</button>-->
-
+    <button onclick="App.sendCoin()">Send MetaCoin</button>
+-->
     <p id="status"></p>
-    <p>
+   <!-- <p>
       <strong>Hint:</strong> open the browser developer console to view any
       errors and warnings.
-    </p>
+    </p>-->
     <script src="index.js"></script>
   </body>
 </html>

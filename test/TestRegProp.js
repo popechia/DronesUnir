@@ -11,7 +11,7 @@ contract("Property registration", async accounts => {
     let _idPlot;
 
     beforeEach(async () => {
-        regProp = await RegProp.new({ from: accountCreator });
+        regProp = await RegProp.new("Prueba de registro",{ from: accountCreator });
         let _plot = await Plot.new();
         let resultTX = await regProp.createPlot(_plot.address, accountCreator, { from: accountCreator });
         await truffleAssert.eventEmitted(resultTX, "plotRegistered", (ev) => {
