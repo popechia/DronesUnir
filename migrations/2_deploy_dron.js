@@ -13,7 +13,7 @@ module.exports = function (deployer) {
   deployer.deploy(RegProp,"Registro de A Coruña");
   deployer.deploy(Plot, 1);
   deployer.deploy(DroneERC721);
-  deployer.deploy(FumigationCO,"FumigationCo");
+  deployer.deploy(FumigationCO,"FumigationCo1");
   //deployer.deploy(FumigationCOMock,"aa");
   deployer.deploy(Crop, "millo");
 };

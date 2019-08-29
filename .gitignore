@@ -3,3 +3,4 @@ build/
 .idea/
 coverage/
 coverage.json
+app/dist/

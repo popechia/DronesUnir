@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>Drone Management</title>
+</head>
+<style>
+  input {
+    display: block;
+    margin-bottom: 12px;
+  }
+</style>
+
+<body>
+  <h1>Drones - TFE UNIR</h1>
+
+  <table>
+    <tr>
+      <td>
+        <h2>Compañia de fumigación <strong class="nombreCO"></strong></h2>
+      </td>
+    </tr>
+    <tr>
+      <td>
+        <input type="text" id="nameCO" placeholder="e.g. Company1" />
+      </td>
+      <td>
+        <button onclick="App.generateCO()" id="generateCOBTN">Generar cia</button>
+      </td>
+    </tr>
+    <tr>
+      <td>
+        <input type="text" id="addressCO" placeholder="e.g. 0x93e66d9baea28c17d9fc393b53e3fbdd76899dae" />
+      </td>
+      <td>
+        <button onclick="App.deployCO()" id="deployCOBTN">Desplegar cia</button>
+      </td>
+    </tr>
+  </table>
+
+  <p id="status"></p>
+</body>
+
+</html>

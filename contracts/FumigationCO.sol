@@ -33,7 +33,7 @@ contract FumigationCO is IERC721Receiver {
         totalDrones.decrement();
     }
 
-    function calculateCost () public returns (uint256) {} 
+    //function calculateCost () public returns (uint256) {} 
 
     /*
      * @return bytes4 `bytes4(keccak256("onERC721Received(address,address,uint256,bytes)"))`

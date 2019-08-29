@@ -1,51 +1,41 @@
 <!DOCTYPE html>
 <html>
-  <head>
-    <title>Drone Management</title>
-  </head>
-  <style>
-    input {
-      display: block;
-      margin-bottom: 12px;
-    }
-  </style>
-  <body>
-    <h1>Drones - TFE UNIR</h1>
-    <p>Registradas <strong class="balance">loading...</strong> parcelas en <strong class="registro">Registro</strong></p>
 
-    <p>Generadas <strong class="plot">loading...</strong> parcelas en el registro de la propiedad</p>
+<head>
+  <title>Drone Management</title>
+</head>
+<style>
+  input {
+    display: block;
+    margin-bottom: 12px;
+  }
+</style>
 
-    <select id="plotsList">
+<body>
+  <h1>Drones - TFE UNIR</h1>
+  <p>Registradas <strong class="balance">loading...</strong> parcelas en <strong class="registro">Registro</strong></p>
 
-    </select>
-    <label for="receiver">To address:</label>
-    <input
-      type="text"
-      id="receiver"
-      placeholder="e.g. 0x93e66d9baea28c17d9fc393b53e3fbdd76899dae"
-    />
-    <button onclick="App.transferPlot()">Transfer Plot</button>
+  <table>
+    <tr>
+      <td colspan="2">
+        <h2>PARCELAS de tú Propiedad</h2>
+      </td>
+    </tr>
+    <tr>
+      <td>
+        <select id="plotsList"></select>
+      </td>
+      <td>
+        <p id="plotDescription"></p>
+      </td>
+    </tr>
+  </table>
+  <label for="receiver">To address:</label>
+  <input type="text" id="receiver" placeholder="e.g. 0x93e66d9baea28c17d9fc393b53e3fbdd76899dae" />
+  <button onclick="App.transferPlot()" id="transferPlotBTN">Transfer Plot</button>
+  <a href="cia.html">cia</a>
+  <p id="status"></p>
+  <!--<script src="js/index.bundle.js" charset="utf-8"></script>-->
+</body>
 
-<!--
-    <h1>Send MetaCoin</h1>
-
-    <label for="amount">Amount:</label>
-    <input type="text" id="amount" placeholder="e.g. 95" />
-
-    <label for="receiver">To address:</label>
-    <input
-      type="text"
-      id="receiver"
-      placeholder="e.g. 0x93e66d9baea28c17d9fc393b53e3fbdd76899dae"
-    />
-
-    <button onclick="App.sendCoin()">Send MetaCoin</button>
--->
-    <p id="status"></p>
-   <!-- <p>
-      <strong>Hint:</strong> open the browser developer console to view any
-      errors and warnings.
-    </p>-->
-    <script src="index.js"></script>
-  </body>
 </html>

@@ -44,6 +44,10 @@ contract DroneERC721 is ERC721Full, Ownable {
         return (Drone(drones[_id]));
     }
 
+    function getDronesOwner(address _owner) public view returns (uint256[] memory) {
+        return _tokensOfOwner(_owner);
+    }
+
     function destroyFactory() public onlyOwner {
         selfdestruct(msg.sender);
     }

@@ -28,6 +28,12 @@ contract("Testing DroneERC721", async accounts => {
   });
 
   it("Get drone not found", async () => {
+    assert.equal(await droneFactory.getDronesOwner(_customer1),1,"Invalid number of drones");    
+  });
+
+
+
+  it("Get drones of owner", async () => {
     await truffleAssert.reverts(droneFactory.getDrone(0),"Drone not found");    
   });
 
