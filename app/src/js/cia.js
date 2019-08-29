@@ -47,19 +47,15 @@ const Cia = {
 
   deployExistingCompany: async function (_address) {    
     var fumigationCOInstance = new Cia.web3.eth.Contract(
-      droneERC721Artifact.abi,
+      fumigationCOArtifact.abi,
       _address,
     );
-    //console.log("==="+await fumigationCOInstance.methods.getName().call());
     return fumigationCOInstance;
   },
-//0x7fbb3c839775100Df67F4cC71390acC754001705
+//0xCBc9f621CF0cc62AB44FE60aB9ba1AD87a21aedF
   deployCO: async function () {
-    //const _addressCo = document.getElementById("addressCO").value;
-    var _addressCo = "0xB67aCFb85495E35D8E92C014e1321161F58a123D";
-    console.log("Address to deploy:"+_addressCo);
+    const _addressCo = document.getElementById("addressCO").value;
     var _instanceCO = await Cia.deployExistingCompany(_addressCo);
-    console.log("deployed CO:"+_instanceCO.methods);
     document.getElementsByClassName("nombreCO")[0].innerHTML = await _instanceCO.methods.getName().call();
     document.getElementById("generateCOBTN").disabled = true;
   },
@@ -67,7 +63,6 @@ const Cia = {
   generateCO: async function () {
     const _nameCO = document.getElementById("nameCO").value;
     var _addrCO = await Cia.createNewCompany(_nameCO);
-    console.log("Address CO:"+_addrCO);
     document.getElementsByClassName("nombreCO")[0].innerHTML = _nameCO;
     document.getElementById("generateCOBTN").disabled = true;
   },
