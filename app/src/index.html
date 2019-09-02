@@ -14,11 +14,40 @@
 <body>
   <h1>Drones - TFE UNIR</h1>
   <p>Registradas <strong class="balance">loading...</strong> parcelas en <strong class="registro">Registro</strong></p>
+  <div id="panelPlot">
+    <table>
+      <tr>
+        <td colspan="3">
+          <strong>Crear nueva parcela</strong>
+        </td>
+      </tr>
+      <tr>
+        <td>
+          Superficie:<input type="text" id="surfaceTXT" placeholder="e.g. 10" />
+        </td>
+        <td>
+          Altura máxima:<input type="text" id="maxHeightTXT" placeholder="e.g. 10" />
+        </td>
+        <td>
+          Altura mínima:<input type="text" id="minHeightTXT" placeholder="e.g. 10" />
+        </td>
+      </tr>
+      <tr>
+        <td>
+          Propietario: <input type="text" id="ownerTXT" placeholder="e.g. 0x93e66d9baea28c17d9fc393b53e3fbdd76899dae" />
+        </td>
+        <td>
+          <button onclick="App.createNewPlot()" id="createPlotBTN">Create Plot</button><strong
+            class="errorCreate"></strong>
+        </td>
+      </tr>
+    </table>
+  </div>
 
   <table>
     <tr>
       <td colspan="2">
-        <h2>PARCELAS de tú Propiedad</h2>
+        <h2>PARCELAS de tu Propiedad</h2>
       </td>
     </tr>
     <tr>

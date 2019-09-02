@@ -1,12 +1,13 @@
 import Web3 from "web3";
 import regPropArtifact from "../../../build/contracts/RegProp.json";
 import plotArtifact from "../../../build/contracts/Plot.json";
+import { max } from "bn.js";
 
 const App = {
   web3: null,
   account: null,
-  accountOrigin: null,
   regProp: null,
+  owner : null,
 
   start: async function () {
     const { web3 } = this;
@@ -15,21 +16,27 @@ const App = {
       // get contract instance
       const networkId = await web3.eth.net.getId();
       this.account = window.ethereum.selectedAddress;
-      this.accountOrigin = window.ethereum.selectedAddress;
-      
+      panelPlot
+      document.getElementById("panelPlot").style.display = "none";
       const deployedNetwork = regPropArtifact.networks[networkId];
-      //var plotInstance;
       this.regProp = await new web3.eth.Contract(
         regPropArtifact.abi,
         deployedNetwork.address,
+        { from: this.account },
       );
       console.log(this.regProp.options.address);
+      this.owner = await this.regProp.methods.owner().call();
+      if (this.account.toUpperCase() == this.owner.toUpperCase()) {
+        console.log("DEL REGISTRO");
+        document.getElementById("panelPlot").style.display = "block";
+
+      }
       //CREACION DE PARCELAS NUEVAS
       //await this.createNewPlot();
 
       this.getCuentas();
-      await this.showPlots(this.account, this.accountOrigin);
-      document.getElementById("plotsList").addEventListener("change",this.showPlot);
+      await this.showPlots();
+      document.getElementById("plotsList").addEventListener("change", this.showPlot);
     } catch (error) {
       console.log(error);
       console.error("Could not connect to contract or chain.");
@@ -37,24 +44,42 @@ const App = {
   },
 
   createNewPlot: async function () {
-    var plot = await new App.web3.eth.Contract(plotArtifact.abi);
+    var plot = await new App.web3.eth.Contract(plotArtifact.abi, { from: this.account });
     var plotInstance;
     plot.options.data = plotArtifact.bytecode;
     let code = plotArtifact.bytecode;
     await plot.deploy({
       data: code,
       arguments: []
-    }).send({ from: this.account, gas: 500000 }).then((instance) => { plotInstance = instance });
+    }).send({ from: this.account, gas: 500000 })
+      .on('error', (error) => {
+        const _error = document.getElementsByClassName("errorCreate")[0];
+        _error.innerHTML = "Transacción incorrecta";
+      })
+      .then(instance => {
+        plotInstance = instance;
+      });
     console.log("======>" + plotInstance.options.address);
-    await plotInstance.methods.initialize(10, 10, 0).send({ from: this.account, gas: 300000 })
+
+    const _surface = document.getElementById("surfaceTXT").value;
+    const _maxHeight = document.getElementById("maxHeightTXT").value;
+    const _minHeight = document.getElementById("minHeightTXT").value;
+    const _owner = document.getElementById("ownerTXT").value;
+
+    await plotInstance.methods.initialize(_surface, _maxHeight, _minHeight).send({ from: this.account, gas: 300000 })
       .on('error', console.error);
 
-    let idPlot = await this.regProp.methods.createPlot(plotInstance.options.address, this.account).send({ from: this.account, gas: 300000 })
-      .on('error', console.error)
-      .on('receipt', (result) => {
+    let idPlot = await this.regProp.methods.createPlot(plotInstance.options.address, _owner).send({ from: this.account, gas: 300000 })
+      .on('error', (error) => {
+        const _error = document.getElementsByClassName("errorCreate")[0];
+        _error.innerHTML = "Solo puede ser ejecutada por el propietario del registro";
+      })
+      .on('receipt', async (result) => {
         plotInstance.methods.setId(result.events.plotRegistered.returnValues.plotId).send({ from: this.account, gas: 300000 })
           .on('error', console.error);
+        await App.showPlots();
       });
+
   },
 
   createNewCompany: async function (_name) {
@@ -70,10 +95,10 @@ const App = {
   },
 
 
-  showPlots: async function (_owner, _from) {
+  showPlots: async function () {
     const { getPlotsOwner } = App.regProp.methods;
     const { getPlot } = App.regProp.methods;
-    const _plots = await getPlotsOwner(_owner).call();
+    const _plots = await getPlotsOwner(App.account).call();
     const _plotsList = document.getElementById("plotsList");
     document.getElementById("transferPlotBTN").disabled = true;
     var _length = _plotsList.options.length;
@@ -89,9 +114,9 @@ const App = {
         _pl,
       );
       _plotsList.add(new Option(_pl, await _plInstance.methods.getId().call()));
-      if (_flag<=0) {
+      if (_flag <= 0) {
         App.showPlotObject(_plInstance);
-        _flag+= 1;        
+        _flag += 1;
       }
     });
     _length = _plots.length;
@@ -101,17 +126,17 @@ const App = {
   showPlot: async function (_selectedPlot) {
     const _plotList = document.getElementById("plotsList");
     if (_plotList.selectedIndex >= 0) {
-      console.log("SelectedIndex:"+_plotList.selectedIndex);
+      console.log("SelectedIndex:" + _plotList.selectedIndex);
       const _selectedPlot = _plotList.options[_plotList.selectedIndex].value;
       const { getPlot } = App.regProp.methods;
       const _plot = await getPlot(_selectedPlot).call();
       var _plotInstance;
-      _plotInstance = await new App.web3.eth.Contract(plotArtifact.abi,_plot);
+      _plotInstance = await new App.web3.eth.Contract(plotArtifact.abi, _plot);
       App.showPlotObject(_plotInstance);
     }
   },
 
-  showPlotObject: async function(_plotInstance) {
+  showPlotObject: async function (_plotInstance) {
     //const _surface = await _plotInstance.methods.getSurface().call();
     const _idPlot = await _plotInstance.methods.getId().call();
     const plotElement = document.getElementById("plotDescription");
@@ -136,12 +161,13 @@ const App = {
     const { safeTransferFrom } = this.regProp.methods;
     await safeTransferFrom(this.account, _receiver, _selectedPlot).send({ from: this.account });
     this.setStatus("Transaction complete!");
+    await App.showPlots();
   },
 
   generateCO: async function () {
     const _nameCO = document.getElementById("nameCO").value;
     var _addrCO = await App.createNewCompany(_nameCO);
-    console.log("Address CO:"+_addrCO);
+    console.log("Address CO:" + _addrCO);
     document.getElementById("generateCOBTN").disabled = true;
   },
 
@@ -154,8 +180,12 @@ const App = {
 window.App = App;
 
 window.ethereum.on('accountsChanged', async function (accounts) {
-  this.account = window.ethereum.selectedAddress;
-  await App.showPlots(this.account, this.account);
+  App.account = window.ethereum.selectedAddress;
+  await App.showPlots();
+  document.getElementById("panelPlot").style.display = "none";
+  if (App.account.toUpperCase() == App.owner.toUpperCase()) {
+    document.getElementById("panelPlot").style.display = "block";
+  }
 });
 
 window.addEventListener("load", function () {

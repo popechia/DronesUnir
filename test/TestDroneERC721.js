@@ -31,8 +31,6 @@ contract("Testing DroneERC721", async accounts => {
     assert.equal(await droneFactory.getDronesOwner(_customer1),1,"Invalid number of drones");    
   });
 
-
-
   it("Get drones of owner", async () => {
     await truffleAssert.reverts(droneFactory.getDrone(0),"Drone not found");    
   });
@@ -62,6 +60,10 @@ contract("Testing DroneERC721", async accounts => {
 
   it("Transfer drone to invalid address", async () => {
     await truffleAssert.reverts(droneFactory.safeTransferFrom(_customer1,droneFactory.address,_droneId,{from: _customer1}),/*"ERC721: transfer caller is not owner nor approved"*/);
+  });
+
+  it("Build drone from invalid address", async () => {//_maxHeight,uint128 _minHeight,uint128 _range
+    await truffleAssert.reverts(droneFactory.buildDrone(_customer1,100,1,10,{from:accounts[3]}),/*"ERC721: transfer caller is not owner nor approved"*/);
   });
 
   it("Build a drone", async () => {

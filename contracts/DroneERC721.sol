@@ -14,16 +14,19 @@ contract DroneERC721 is ERC721Full, Ownable {
     uint128 constant DRONE_MAXHEIGHT= 100;
     uint128 constant DRONE_MINHEIGHT = 10;
     uint128 constant DRONE_RANGE = 100;
-    uint128 constant DRONE_STOCK = 10;
 
     constructor() ERC721Full("DRONES", "DRN") public {
     }
 
-    function buildDrone(address customer) public returns (uint256) {
+    function buildDrone(address customer) public onlyOwner returns (uint256) {
+        return buildDrone(customer,DRONE_MAXHEIGHT,DRONE_MINHEIGHT,DRONE_RANGE);
+    }
+
+    function buildDrone(address customer,uint128 _maxHeight,uint128 _minHeight,uint128 _range) public onlyOwner returns (uint256) {
         _tokenIds.increment();
         uint256 newItemId = _tokenIds.current();
         Drone newDrone = new Drone(newItemId);
-        newDrone.initialize(DRONE_MAXHEIGHT,DRONE_MINHEIGHT,DRONE_RANGE);
+        newDrone.initialize(_maxHeight,_minHeight,_range);
         _mint(customer, newItemId);
         _setTokenURI(newItemId, string(newDrone.getMetadata()));
         drones[newItemId] = address(newDrone);
@@ -35,8 +38,8 @@ contract DroneERC721 is ERC721Full, Ownable {
     }
 
     function destroyDrone(uint256 _id) public {
-        drones[_id] = address(0);
         _burn(_id);
+        drones[_id] = address(0);
     }
 
     function getDrone (uint256 _id) public view returns (Drone){

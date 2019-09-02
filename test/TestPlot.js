@@ -6,16 +6,26 @@ contract("Plot", async accounts => {
 
     beforeEach(async () => {
         plot = await Plot.new();
-        await plot.initialize(100, 1000, 10);
+        await plot.initialize(100, 1000, 10,1);
     });
 
     afterEach(async () => {
     });
-/*
+
     it("Validate Id", async () => {
+        await plot.setId(1);
         assert.equal(await plot.getId(), 1, "Invalid id");
     });
-*/
+
+    it("Validate pos", async () => {
+        assert.equal(await plot.getPos(), 1, "Invalid pos");        
+    });
+
+    it("Validate name", async () => {
+        await plot.setName("plot1");
+        assert.equal(await plot.getName(), "plot1", "Invalid name");
+    });
+
     it("Validate surface", async () => {
         assert.equal(await plot.getSurface(), 100, "Invalid surface");
     });
@@ -41,7 +51,7 @@ contract("Plot", async accounts => {
     });
     */
     it("MaxHeight negative: reverted", async () => {
-        await truffleAssert.reverts(plot.initialize(10, 1, 10), "MaxHeight less than minHeight");
+        await truffleAssert.reverts(plot.initialize(10, 1, 10,3), "MaxHeight less than minHeight");
     });
 
     /*
