@@ -1,13 +1,14 @@
 import Web3 from "web3";
 import regPropArtifact from "../../../build/contracts/RegProp.json";
 import plotArtifact from "../../../build/contracts/Plot.json";
-import { max } from "bn.js";
+import landOwnerArtifact from "../../../build/contracts/LandOwner.json";
 
 const App = {
   web3: null,
   account: null,
   regProp: null,
   owner : null,
+  landOwner: null,
 
   start: async function () {
     const { web3 } = this;
@@ -18,7 +19,7 @@ const App = {
       this.account = window.ethereum.selectedAddress;
       panelPlot
       document.getElementById("panelPlot").style.display = "none";
-      const deployedNetwork = regPropArtifact.networks[networkId];
+      var deployedNetwork = regPropArtifact.networks[networkId];
       this.regProp = await new web3.eth.Contract(
         regPropArtifact.abi,
         deployedNetwork.address,
@@ -27,10 +28,15 @@ const App = {
       console.log(this.regProp.options.address);
       this.owner = await this.regProp.methods.owner().call();
       if (this.account.toUpperCase() == this.owner.toUpperCase()) {
-        console.log("DEL REGISTRO");
         document.getElementById("panelPlot").style.display = "block";
-
       }
+      deployedNetwork = landOwnerArtifact.networks[networkId];
+      this.landOwner = await new web3.eth.Contract(
+        landOwnerArtifact.abi,
+        deployedNetwork.address,
+        { from: this.account },
+      );
+      console.log(this.landOwner.options.address);
       //CREACION DE PARCELAS NUEVAS
       //await this.createNewPlot();
 
@@ -66,7 +72,7 @@ const App = {
     const _minHeight = document.getElementById("minHeightTXT").value;
     const _owner = document.getElementById("ownerTXT").value;
 
-    await plotInstance.methods.initialize(_surface, _maxHeight, _minHeight).send({ from: this.account, gas: 300000 })
+    await plotInstance.methods.initialize(_surface, _maxHeight, _minHeight,1).send({ from: this.account, gas: 300000 })
       .on('error', console.error);
 
     let idPlot = await this.regProp.methods.createPlot(plotInstance.options.address, _owner).send({ from: this.account, gas: 300000 })
@@ -126,7 +132,6 @@ const App = {
   showPlot: async function (_selectedPlot) {
     const _plotList = document.getElementById("plotsList");
     if (_plotList.selectedIndex >= 0) {
-      console.log("SelectedIndex:" + _plotList.selectedIndex);
       const _selectedPlot = _plotList.options[_plotList.selectedIndex].value;
       const { getPlot } = App.regProp.methods;
       const _plot = await getPlot(_selectedPlot).call();
@@ -139,8 +144,18 @@ const App = {
   showPlotObject: async function (_plotInstance) {
     //const _surface = await _plotInstance.methods.getSurface().call();
     const _idPlot = await _plotInstance.methods.getId().call();
-    const plotElement = document.getElementById("plotDescription");
-    plotElement.innerHTML = _idPlot;
+    const _surfacePlot = await _plotInstance.methods.getSurface().call();
+    const _maxHPlot = await _plotInstance.methods.getMaxHeight().call();
+    const _minHPlot = await _plotInstance.methods.getMinHeight().call();
+    const plotIdElement = document.getElementById("plotId");
+    const plotSurfaceElement = document.getElementById("plotSurface");
+    const plotMaxElement = document.getElementById("plotMinHeight");
+    const plotMinElement = document.getElementById("plotMaxHeight");
+
+    plotIdElement.innerHTML = _idPlot;
+    plotSurfaceElement.innerHTML = _surfacePlot;
+    plotMaxElement.innerHTML = _maxHPlot;
+    plotMinElement.innerHTML = _minHPlot;
   },
 
   getCuentas: async function () {
@@ -169,6 +184,26 @@ const App = {
     var _addrCO = await App.createNewCompany(_nameCO);
     console.log("Address CO:" + _addrCO);
     document.getElementById("generateCOBTN").disabled = true;
+  },
+
+  fumigate: async function () {
+    const _plotList = document.getElementById("plotsList");
+    if (_plotList.selectedIndex >= 0) {
+      const _selectedPlot = _plotList.options[_plotList.selectedIndex].value;
+      const { getPlot } = App.regProp.methods;
+      const _plot = await getPlot(_selectedPlot).call();
+      console.log(_plot);
+      App.landOwner.methods.publishWork(_plot).send({ from: App.account, gas: 500000 })
+      .on('error', (error) => {
+        const _error = document.getElementsByClassName("errorCreate")[0];
+        _error.innerHTML = "Transacción incorrecta";
+      });/*
+      .then(instance => {
+        plotInstance = instance;
+      });*/
+//      _plotInstance = await new App.web3.eth.Contract(plotArtifact.abi, _plot);
+    }
+    console.log("fumigate");
   },
 
   setStatus: function (message) {

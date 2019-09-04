@@ -1,11 +1,13 @@
 pragma solidity >=0.4.25 <0.6.0;
 
-import "../node_modules/openzeppelin-solidity/contracts/token/ERC721/IERC721Receiver.sol";
+contract LandOwner {
+    mapping (address => mapping (address => uint)) public publishedWork;
+    mapping (address => address) public finishedWork;
 
-contract LandOwner is IERC721Receiver {
-    event WorkPublished (address _owner , uint256 _plot);
+    event WorkPublished (address _owner ,address _plot, uint _timestamp);
 
-    function publishWork(uint256 _plotId) public  {
-        emit WorkPublished (msg.sender, _plotId);
+    function publishWork(address _plotId) public  {
+        publishedWork[msg.sender][_plotId] = now;
+        emit WorkPublished (msg.sender, _plotId, now);
     }
 }

@@ -2,6 +2,9 @@ import Web3 from "web3";
 import droneERC721Artifact from "../../../build/contracts/DroneERC721.json";
 import fumigationCOArtifact from "../../../build/contracts/FumigationCO.json";
 import droneArtifact from "../../../build/contracts/Drone.json";
+import landOwnerArtifact from "../../../build/contracts/LandOwner.json";
+import regPropArtifact from "../../../build/contracts/RegProp.json";
+import plotArtifact from "../../../build/contracts/Plot.json";
 
 const Cia = {
   web3: null,
@@ -10,6 +13,8 @@ const Cia = {
   companyAddress: null,
   droneFactory: null,
   drone: null,
+  landOwner: null,
+  regProp: null,
 
   start: async function () {
     const { web3 } = this;
@@ -21,20 +26,74 @@ const Cia = {
       //const accounts = await web3.eth.getAccounts();
       this.account = window.ethereum.selectedAddress;
       this.accountOrigin = window.ethereum.selectedAddress;
-      
-      const deployedNetwork = droneERC721Artifact.networks[networkId];
+
+      var deployedNetwork = droneERC721Artifact.networks[networkId];
       this.droneFactory = await new web3.eth.Contract(
         droneERC721Artifact.abi,
         deployedNetwork.address,
       );
+      deployedNetwork = landOwnerArtifact.networks[networkId];
+      this.landOwner = await new web3.eth.Contract(
+        landOwnerArtifact.abi,
+        deployedNetwork.address,
+        { from: this.account },
+      );
+      deployedNetwork = regPropArtifact.networks[networkId];
+      this.regProp = await new web3.eth.Contract(
+        regPropArtifact.abi,
+        deployedNetwork.address,
+        { from: this.account },
+      );
+
       document.getElementById("factoryNameP").innerHTML = this.droneFactory.options.address;
-      console.log("DroneFactory address:"+this.droneFactory.options.address);
+      console.log("DroneFactory address:" + this.droneFactory.options.address);
       this.companyAddress = "0xABC0761c632d259718Fd42cbD543963aad7d9F90";
       this.showDrones(this.companyAddress);
+
+      this.landOwner.events.WorkPublished(async (err, events) => {
+        var _plot = events.returnValues._plot;
+        console.log("evento:.:::::" + _plot);
+        var _plotInstance = await Cia.searchPlot(_plot);
+        var _table = document.getElementById("worksTable");
+        var _row = _table.insertRow(0);
+        this.showPlotObject(_plotInstance, _row);
+       /* var _cell1 = _row.insertCell(0);
+        var _cell2 = _row.insertCell(1);
+        _cell1.innerHTML = await _plotInstance.methods.getId().call();
+        _cell2.innerHTML = "<button onclick='App.bidWork()' id='bidWorkBTN'>Pujar</button>";*/
+      });
     } catch (error) {
       console.error("Could not connect to contract or chain.");
     }
   },
+
+  bidWork: async function (_id) {
+    console.log("BID "+_id);
+  },
+
+  searchPlot: async function (_selectedPlot) {
+    var _plotInstance;
+    _plotInstance = await new App.web3.eth.Contract(plotArtifact.abi, _selectedPlot);
+    return _plotInstance;
+  },
+
+  showPlotObject: async function (_plotInstance, _row) {
+    const _idPlot = await _plotInstance.methods.getId().call();
+    const _surfacePlot = await _plotInstance.methods.getSurface().call();
+    const _maxHPlot = await _plotInstance.methods.getMaxHeight().call();
+    const _minHPlot = await _plotInstance.methods.getMinHeight().call();
+    const plotIdElement = _row.insertCell(0);
+    const plotSurfaceElement = _row.insertCell(1);
+    const plotMaxElement = _row.insertCell(2);
+    const plotMinElement = _row.insertCell(3);
+    plotIdElement.innerHTML = _idPlot;
+    plotSurfaceElement.innerHTML = _surfacePlot;
+    plotMaxElement.innerHTML = _maxHPlot;
+    plotMinElement.innerHTML = _minHPlot;
+    _row.insertCell(4).innerHTML = "<button onclick='App.bidWork("+_idPlot+")' id='bidWorkBTN'>Pujar</button>";
+
+  },
+
 
   createNewCompany: async function (_name) {
     var fumigationCO = await new Cia.web3.eth.Contract(fumigationCOArtifact.abi);
@@ -50,7 +109,7 @@ const Cia = {
     return fumigationCOInstance.options.address;
   },
 
-  deployExistingCompany: async function (_address) {    
+  deployExistingCompany: async function (_address) {
     var fumigationCOInstance = new Cia.web3.eth.Contract(
       fumigationCOArtifact.abi,
       _address,
@@ -70,7 +129,7 @@ const Cia = {
   generateCO: async function () {
     const _nameCO = document.getElementById("nameCO").value;
     var _addrCO = await Cia.createNewCompany(_nameCO);
-    console.log("Generated company:"+_addrCO);
+    console.log("Generated company:" + _addrCO);
     document.getElementsByClassName("nombreCO")[0].innerHTML = _nameCO;
     document.getElementById("generateCOBTN").disabled = true;
   },
@@ -94,7 +153,7 @@ const Cia = {
         droneArtifact.abi,
         _drone,
       );
-      const _text = await _droneInstance.methods.getId().call() + "->"+ await _droneInstance.methods.getRange().call();
+      const _text = await _droneInstance.methods.getId().call() + "->" + await _droneInstance.methods.getRange().call();
       _dronesList.add(new Option(_text, await _droneInstance.methods.getId().call()));
       /*if (_flag<=0) {
         App.showPlotObject(_plInstance);
@@ -109,15 +168,15 @@ const Cia = {
     const _owner = Cia.companyAddress;
     const _range = document.getElementById("rangeDroneInput").value;
     console.log(Cia.companyAddress);
-    console.log(_owner+"::"+_range);
-    await Cia.buyDrone1(_owner,_range);
+    console.log(_owner + "::" + _range);
+    await Cia.buyDrone1(_owner, _range);
     await Cia.showDrones(_owner);
   },
-  
-  buyDrone1: async function (_owner,_range) {
-   await Cia.droneFactory.methods.buildDrone(_owner,10,1,_range).send({ from: this.account, gas: 3000000 })
-    .on ('error', console.error)
-    .on ('receipt', (result)  => {console.log(result)} );
+
+  buyDrone1: async function (_owner, _range) {
+    await Cia.droneFactory.methods.buildDrone(_owner, 10, 1, _range).send({ from: this.account, gas: 3000000 })
+      .on('error', console.error)
+      .on('receipt', (result) => { console.log(result) });
   },
 
 

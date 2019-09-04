@@ -4,3 +4,4 @@ build/
 coverage/
 coverage.json
 app/dist/
+app/npm-debug.log

@@ -15,7 +15,7 @@
   <h1>Drones - TFE UNIR</h1>
   <p>Registradas <strong class="balance">loading...</strong> parcelas en <strong class="registro">Registro</strong></p>
   <div id="panelPlot">
-    <table>
+    <table style="border: 1px solid black">
       <tr>
         <td colspan="3">
           <strong>Crear nueva parcela</strong>
@@ -34,34 +34,80 @@
       </tr>
       <tr>
         <td>
-          Propietario: <input type="text" id="ownerTXT" placeholder="e.g. 0x93e66d9baea28c17d9fc393b53e3fbdd76899dae" />
-        </td>
-        <td>
+          Propietario: <input type="text" id="ownerTXT" size="42"
+            placeholder="e.g. 0x93e66d9baea28c17d9fc393b53e3fbdd76899dae" />
           <button onclick="App.createNewPlot()" id="createPlotBTN">Create Plot</button><strong
             class="errorCreate"></strong>
+
+        </td>
+        <td>
         </td>
       </tr>
     </table>
   </div>
 
-  <table>
+  <table style="width: 80%">
+    <caption>
+      <h2>PARCELAS de tu Propiedad</h2>
+    </caption>
     <tr>
-      <td colspan="2">
-        <h2>PARCELAS de tu Propiedad</h2>
+      <td>
+
+      </td>
+      <td>
+        <label for="receiver">Traspasar a:</label>
       </td>
     </tr>
     <tr>
-      <td>
+      <td style="vertical-align: top">
         <select id="plotsList"></select>
       </td>
       <td>
-        <p id="plotDescription"></p>
+        <input type="text" id="receiver" size="42" placeholder="e.g. 0x93e66d9baea28c17d9fc393b53e3fbdd76899dae" />
+        <button onclick="App.transferPlot()" id="transferPlotBTN">Transfer Plot</button>
+      </td>
+    </tr>
+    <tr>
+      <td>
+        <table style="border: 1px solid black">
+          <tr>
+            <th style="padding-left: 10px; padding-right: 10px; text-align: right;">
+              Id
+            </th>
+            <th style="padding-left: 10px; padding-right: 10px; text-align: right;">
+              Superficie
+            </th>
+            <th style="padding-left: 10px; padding-right: 10px; text-align: right;">
+              Altura Máxima
+            </th>
+            <th style="padding-left: 10px; padding-right: 10px; text-align: right;">
+              Altura Mínima
+            </th>
+          </tr>
+
+          <tr>
+            <td style="padding-left: 10px; padding-right: 10px; text-align: right;">
+              <p id="plotId"></p>
+            </td>
+            <td style="padding-left: 10px; padding-right: 10px; text-align: right;">
+              <p id="plotSurface"></p>
+            </td>
+            <td style="padding-left: 10px; padding-right: 10px; text-align: right;">
+              <p id="plotMinHeight"></p>
+            </td>
+            <td style="padding-left: 10px; padding-right: 10px; text-align: right;">
+              <p id="plotMaxHeight"></p>
+            </td>
+          </tr>
+          <tr>
+            <td colspan="4" style= "text-align: center;">
+              <button onclick="App.fumigate()" id="transferPlotBTN">Solicitar Fummigación</button>
+            </td>
+          </tr>
+        </table>
       </td>
     </tr>
   </table>
-  <label for="receiver">To address:</label>
-  <input type="text" id="receiver" placeholder="e.g. 0x93e66d9baea28c17d9fc393b53e3fbdd76899dae" />
-  <button onclick="App.transferPlot()" id="transferPlotBTN">Transfer Plot</button>
   <a href="cia.html">cia</a>
   <p id="status"></p>
   <!--<script src="js/index.bundle.js" charset="utf-8"></script>-->
