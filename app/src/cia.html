@@ -30,8 +30,8 @@
     </tr>
     <tr>
       <td>
-        <input type="text" id="addressCO" placeholder="e.g. 0x93e66d9baea28c17d9fc393b53e3fbdd76899dae" />
-      </td>
+          <input type="text" id="addressCO" placeholder="e.g. 0x93e66d9baea28c17d9fc393b53e3fbdd76899dae" />
+        </td>
       <td>
         <button onclick="App.deployCO()" id="deployCOBTN">Desplegar cia</button>
       </td>
@@ -75,22 +75,52 @@
 
   </table>
 
-  <table>
+  <table style="border: 1px solid black" id="worksTable">
     <tr>
-      <td>
+      <td colspan="7">
         <h2>TRABAJOS OFERTADOS</h2>
       </td>
     </tr>
     <tr>
-      <table id="worksTable">
+      <td style="border: 1px solid black">
+        Id Parcela
+      </td>
+      <td style="border: 1px solid black">
+        Superficie
+      </td>
+      <td style="border: 1px solid black">
+        Altura máxima
+      </td>
+      <td style="border: 1px solid black">
+        Altura mínima
+      </td>
+      <td style="border: 1px solid black">
+        ID Dron más cercano
+      </td>
+      <td style="border: 1px solid black">
+        Distancia
+      </td>
+      <td style="border: 1px solid black">
+        Acción
+      </td>
+    </tr>
+    <tr>
+      <td colspan="7">
+      <table >
         
       </table>
+      </td>
     </tr>
   </table>
 
 
 
-  <p id="status"></p>
+
+  <p>Drone más cercano <strong id="status"> Pending...</strong></p>
+  <p id="statusCia" style= "color: red; ">
+  </p>
+  Importe presupuestado: <input type="text" id="bidValueTXT" placeholder="e.g. 1000" />
+
 </body>
 
 </html>

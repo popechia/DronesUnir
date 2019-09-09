@@ -9,12 +9,12 @@ import plotArtifact from "../../../build/contracts/Plot.json";
 const Cia = {
   web3: null,
   account: null,
-  accountOrigin: null,
   companyAddress: null,
   droneFactory: null,
-  drone: null,
+  drones: [],
   landOwner: null,
   regProp: null,
+  publishedWorks: [],
 
   start: async function () {
     const { web3 } = this;
@@ -22,10 +22,7 @@ const Cia = {
     try {
       // get contract instance
       const networkId = await web3.eth.net.getId();
-      //console.log("==>" + networkId);
-      //const accounts = await web3.eth.getAccounts();
       this.account = window.ethereum.selectedAddress;
-      this.accountOrigin = window.ethereum.selectedAddress;
 
       var deployedNetwork = droneERC721Artifact.networks[networkId];
       this.droneFactory = await new web3.eth.Contract(
@@ -46,29 +43,110 @@ const Cia = {
       );
 
       document.getElementById("factoryNameP").innerHTML = this.droneFactory.options.address;
-      console.log("DroneFactory address:" + this.droneFactory.options.address);
-      this.companyAddress = "0xABC0761c632d259718Fd42cbD543963aad7d9F90";
+      this.companyAddress = "0x78C1A780553d2d9Ee98700D7653b62AEF6263ECB";
       this.showDrones(this.companyAddress);
+      this.showWorks();
 
-      this.landOwner.events.WorkPublished(async (err, events) => {
-        var _plot = events.returnValues._plot;
-        console.log("evento:.:::::" + _plot);
-        var _plotInstance = await Cia.searchPlot(_plot);
-        var _table = document.getElementById("worksTable");
-        var _row = _table.insertRow(0);
-        this.showPlotObject(_plotInstance, _row);
-       /* var _cell1 = _row.insertCell(0);
-        var _cell2 = _row.insertCell(1);
-        _cell1.innerHTML = await _plotInstance.methods.getId().call();
-        _cell2.innerHTML = "<button onclick='App.bidWork()' id='bidWorkBTN'>Pujar</button>";*/
-      });
+
+      this.landOwner.events.WorkPublished(function (err, events) { console.log(events.logIndex + "---" + events.blocNumber); })
+        .on('data', async function (event) {
+          var _plot = event.returnValues._plot;
+          var _plotInstance = await Cia.searchPlot(_plot);
+          var _table = document.getElementById("worksTable");
+          var _row = _table.insertRow(-1);
+          Cia.showPlotObject(_plotInstance, _row);
+          Cia.landOwner.events.WorkFinished(function (err, event) { console.log(event.transactionIndex); })
+            .on('data', function (events) {
+              var _worker = events.returnValues._owner;
+              var _plotId = events.returnValues._plot;
+              var _timest = events.returnValues._timestamp;
+              var _droneA = events.returnValues._drone;
+              Cia.showDrones(Cia.companyAddress);
+            });
+
+          //this.publishedWorks.push(_plot);
+          //this.showWorks();
+        });
+      /*
+            this.landOwner.events.WorkFinished(function (err, event) { console.log(event); })
+              .on('data', function (events) {
+                var _worker = events.returnValues._owner;
+                var _plotId = events.returnValues._plot;
+                var _timest = events.returnValues._timestamp;
+                var _droneA = events.returnValues._drone;
+                console.log("Worker:" + _worker);
+                console.log("Plot  :" + _plotId);
+                console.log("Time  :" + _timest);
+                console.log("Drone :" + _droneA);
+                Cia.showDrones(Cia.companyAddress);
+              });*/
     } catch (error) {
+      console.log(error);
       console.error("Could not connect to contract or chain.");
     }
   },
 
-  bidWork: async function (_id) {
-    console.log("BID "+_id);
+  showWorks: async function () {
+    Cia.publishedWorks.forEach(function (_work, _index) {
+      console.log("=====" + _work);
+    });
+  },
+
+  bidWork: async function (_plotAddress, _rowIndex) {
+    console.log("BID " + _plotAddress);
+    const _plotInstance = await Cia.searchPlot(_plotAddress);
+    const _position = await _plotInstance.methods.getPos().call();
+    var _selectedDrone = await Cia.nearestDrone(_position);
+    console.log("position" + _position);
+    var _minDist = await Cia.drones[_selectedDrone].methods.calculateDistanceToPos(_position).call();
+    var _status = document.getElementById("status");
+    const _idDrone = await Cia.drones[_selectedDrone].methods.getId().call()
+    _status.innerHTML = "(Distancia =" + _minDist + ") -> Enviar <button onclick='App.sendDrone(" + _position + ",\"" + _idDrone + "\",\"" + _plotAddress + "\",+" + _rowIndex + ")' id='sendDroneBTN'> Dron " + _idDrone + "</button>";
+  },
+
+  nearestDrone: async function (_position) {
+    var _selectedDrone = null;
+    var _minDist = 0;
+    for (var i = 0; i < Cia.drones.length; i++) {
+      var result = await Cia.drones[i].methods.calculateDistanceToPos(_position).call();
+      if ((_selectedDrone == null) || (result < _minDist)) {
+        _minDist = result;
+        _selectedDrone = i;
+      }
+    }
+    return _selectedDrone;
+
+  },
+
+  sendDrone: async function (_position, _idDrone, _plotAddress, _rowIndex) {
+    const _drone = await Cia.droneFactory.methods.getDrone(_idDrone).call();
+    const _droneInstance = await new App.web3.eth.Contract(
+      droneArtifact.abi,
+      _drone,
+    );
+    const _distance = await _droneInstance.methods.calculateDistanceToPos(_position).call();
+    if (_distance > 0) {
+      _droneInstance.methods.moveTo(_position).send({ from: Cia.account, gas: 300000 })
+        .on('error', console.error)
+        .on('receipt', async (result) => {
+          console.log(result);
+          console.log("====================" + await _droneInstance.methods.getCurrentPos().call());
+        });
+    } else {
+      console.log("Drone ya en posicion, solo fumiga");
+    }
+
+    Cia.landOwner.methods.completeWork(_plotAddress, _drone).send({ from: App.account, gas: 300000 })
+      .on('error', (error) => {
+        const _error = document.getElementById("statusCia");
+        _error.innerHTML = "Transacción incorrecta";
+      })
+      .on('receipt', async (result) => {
+        document.getElementById("worksTable").deleteRow(_rowIndex);
+        document.getElementById("status").innerHTML = null;
+
+      });
+
   },
 
   searchPlot: async function (_selectedPlot) {
@@ -82,16 +160,22 @@ const Cia = {
     const _surfacePlot = await _plotInstance.methods.getSurface().call();
     const _maxHPlot = await _plotInstance.methods.getMaxHeight().call();
     const _minHPlot = await _plotInstance.methods.getMinHeight().call();
+    const _position = await _plotInstance.methods.getPos().call();
+    const _selectedDrone = await Cia.nearestDrone(_position);;
     const plotIdElement = _row.insertCell(0);
     const plotSurfaceElement = _row.insertCell(1);
     const plotMaxElement = _row.insertCell(2);
     const plotMinElement = _row.insertCell(3);
+    const _nearestDroneElement = _row.insertCell(4);
+    const _distanceToPosElement = _row.insertCell(5);
     plotIdElement.innerHTML = _idPlot;
     plotSurfaceElement.innerHTML = _surfacePlot;
     plotMaxElement.innerHTML = _maxHPlot;
     plotMinElement.innerHTML = _minHPlot;
-    _row.insertCell(4).innerHTML = "<button onclick='App.bidWork("+_idPlot+")' id='bidWorkBTN'>Pujar</button>";
+    _nearestDroneElement.innerHTML = await Cia.drones[_selectedDrone].methods.getId().call();
+    _distanceToPosElement.innerHTML = await Cia.drones[_selectedDrone].methods.calculateDistanceToPos(_position).call();
 
+    _row.insertCell(6).innerHTML = "<button onclick='App.bidWork(\"" + _plotInstance.options.address + "\"," + _row.rowIndex + ")' id='bidWorkBTN'>Pujar</button>";
   },
 
 
@@ -103,8 +187,7 @@ const Cia = {
     await fumigationCO.deploy({
       data: code,
       arguments: [_name]
-    }).send({ from: this.account, gas: 1000000 }).then((instance) => { fumigationCOInstance = instance });
-    console.log(await fumigationCOInstance.methods.getName().call());
+    }).send({ from: Cia.account, gas: 1000000 }).then((instance) => { fumigationCOInstance = instance });
     Cia.companyAddress = fumigationCOInstance.options.address;
     return fumigationCOInstance.options.address;
   },
@@ -137,7 +220,8 @@ const Cia = {
 
   showDrones: async function (_owner) {
     const { getDronesOwner } = Cia.droneFactory.methods;
-    const _drones = await getDronesOwner(_owner).call();
+    var _drones = [];
+    _drones = await getDronesOwner(_owner).call();
     document.getElementById("numberDrones").innerHTML = _drones.length;
     const _dronesList = document.getElementById("dronesList");
 
@@ -145,7 +229,6 @@ const Cia = {
     for (var i = 0; i < _length; i++) {
       _dronesList.remove(0);
     }
-    //let _flag = 0;
 
     _drones.forEach(async function (_dr, index) {
       const _drone = await Cia.droneFactory.methods.getDrone(_dr).call();
@@ -153,7 +236,8 @@ const Cia = {
         droneArtifact.abi,
         _drone,
       );
-      const _text = await _droneInstance.methods.getId().call() + "->" + await _droneInstance.methods.getRange().call();
+      const _text = await _droneInstance.methods.getId().call() + "->" + await _droneInstance.methods.getRange().call() + "-" + await _droneInstance.methods.getCurrentPos().call();
+      Cia.drones.push(_droneInstance);
       _dronesList.add(new Option(_text, await _droneInstance.methods.getId().call()));
       /*if (_flag<=0) {
         App.showPlotObject(_plInstance);
@@ -167,8 +251,6 @@ const Cia = {
   buyDrone: async function () {
     const _owner = Cia.companyAddress;
     const _range = document.getElementById("rangeDroneInput").value;
-    console.log(Cia.companyAddress);
-    console.log(_owner + "::" + _range);
     await Cia.buyDrone1(_owner, _range);
     await Cia.showDrones(_owner);
   },

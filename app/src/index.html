@@ -17,7 +17,7 @@
   <div id="panelPlot">
     <table style="border: 1px solid black">
       <tr>
-        <td colspan="3">
+        <td colspan="4">
           <strong>Crear nueva parcela</strong>
         </td>
       </tr>
@@ -31,9 +31,12 @@
         <td>
           Altura mínima:<input type="text" id="minHeightTXT" placeholder="e.g. 10" />
         </td>
+        <td>
+          Posición:<input type="text" id="posTXT" placeholder="e.g. 10" />
+        </td>        
       </tr>
       <tr>
-        <td>
+        <td colspan="3">
           Propietario: <input type="text" id="ownerTXT" size="42"
             placeholder="e.g. 0x93e66d9baea28c17d9fc393b53e3fbdd76899dae" />
           <button onclick="App.createNewPlot()" id="createPlotBTN">Create Plot</button><strong
@@ -83,6 +86,9 @@
             <th style="padding-left: 10px; padding-right: 10px; text-align: right;">
               Altura Mínima
             </th>
+            <th style="padding-left: 10px; padding-right: 10px; text-align: right;">
+              Posicion
+            </th>            
           </tr>
 
           <tr>
@@ -98,9 +104,12 @@
             <td style="padding-left: 10px; padding-right: 10px; text-align: right;">
               <p id="plotMaxHeight"></p>
             </td>
+            <td style="padding-left: 10px; padding-right: 10px; text-align: right;">
+              <p id="plotPos"></p>
+            </td>            
           </tr>
           <tr>
-            <td colspan="4" style= "text-align: center;">
+            <td colspan="5" style= "text-align: center;">
               <button onclick="App.fumigate()" id="transferPlotBTN">Solicitar Fummigación</button>
             </td>
           </tr>
@@ -109,7 +118,7 @@
     </tr>
   </table>
   <a href="cia.html">cia</a>
-  <p id="status"></p>
+  <p id="status" style= "color: red; "></p>
   <!--<script src="js/index.bundle.js" charset="utf-8"></script>-->
 </body>
 

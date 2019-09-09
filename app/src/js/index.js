@@ -71,8 +71,8 @@ const App = {
     const _maxHeight = document.getElementById("maxHeightTXT").value;
     const _minHeight = document.getElementById("minHeightTXT").value;
     const _owner = document.getElementById("ownerTXT").value;
-
-    await plotInstance.methods.initialize(_surface, _maxHeight, _minHeight,1).send({ from: this.account, gas: 300000 })
+    const _pos = document.getElementById("posTXT").value;
+    await plotInstance.methods.initialize(_surface, _maxHeight, _minHeight,_pos).send({ from: this.account, gas: 300000 })
       .on('error', console.error);
 
     let idPlot = await this.regProp.methods.createPlot(plotInstance.options.address, _owner).send({ from: this.account, gas: 300000 })
@@ -147,15 +147,18 @@ const App = {
     const _surfacePlot = await _plotInstance.methods.getSurface().call();
     const _maxHPlot = await _plotInstance.methods.getMaxHeight().call();
     const _minHPlot = await _plotInstance.methods.getMinHeight().call();
+    const _posPlot = await _plotInstance.methods.getPos().call();
     const plotIdElement = document.getElementById("plotId");
     const plotSurfaceElement = document.getElementById("plotSurface");
     const plotMaxElement = document.getElementById("plotMinHeight");
     const plotMinElement = document.getElementById("plotMaxHeight");
+    const posElement = document.getElementById("plotPos");
 
     plotIdElement.innerHTML = _idPlot;
     plotSurfaceElement.innerHTML = _surfacePlot;
     plotMaxElement.innerHTML = _maxHPlot;
     plotMinElement.innerHTML = _minHPlot;
+    posElement.innerHTML = _posPlot;
   },
 
   getCuentas: async function () {
@@ -195,7 +198,7 @@ const App = {
       console.log(_plot);
       App.landOwner.methods.publishWork(_plot).send({ from: App.account, gas: 500000 })
       .on('error', (error) => {
-        const _error = document.getElementsByClassName("errorCreate")[0];
+        const _error = document.getElementById("status");
         _error.innerHTML = "Transacción incorrecta";
       });/*
       .then(instance => {
