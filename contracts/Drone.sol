@@ -11,6 +11,8 @@ contract Drone {
     bool[5] public pestList;
     uint private currentPos;
 
+    event DroneMoved (uint256 droneId,uint newPos);
+
     constructor (uint256 _id) public {
         id = _id;
         fabricationCost = 100;
@@ -67,6 +69,7 @@ contract Drone {
         currentPos = _newPos;
         require (range > (_distance + calculateDistanceToPos(INIT_POS)),"Insufficient autonomy to return");
         range = range - calculateDistanceToPos(_newPos);
+        emit DroneMoved(id,_newPos);
     }
 
     function calculateDistanceToPos(uint _posTo) public view returns (uint) {

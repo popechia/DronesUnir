@@ -2,6 +2,7 @@ import Web3 from "web3";
 import regPropArtifact from "../../../build/contracts/RegProp.json";
 import plotArtifact from "../../../build/contracts/Plot.json";
 import landOwnerArtifact from "../../../build/contracts/LandOwner.json";
+import droneCoinArtifact from "../../../build/contracts/DronCoin.json";
 
 const App = {
   web3: null,
@@ -9,6 +10,7 @@ const App = {
   regProp: null,
   owner : null,
   landOwner: null,
+  dronCoin: null,
 
   start: async function () {
     const { web3 } = this;
@@ -36,13 +38,40 @@ const App = {
         deployedNetwork.address,
         { from: this.account },
       );
+      deployedNetwork = droneCoinArtifact.networks[networkId];
+      this.dronCoin = await new web3.eth.Contract(
+        droneCoinArtifact.abi,
+        deployedNetwork.address,
+        { from: this.account },
+      );
       console.log(this.landOwner.options.address);
+      var _amount = this.dronCoin.methods.balanceOf(this.account).call().then((result) => console.log(result));
       //CREACION DE PARCELAS NUEVAS
       //await this.createNewPlot();
 
       this.getCuentas();
       await this.showPlots();
       document.getElementById("plotsList").addEventListener("change", this.showPlot);
+
+/*
+      this.landOwner.events.workBided(function (err, events) { console.log(events); })
+      .on('data', async function (event) {
+        var _plot = event.returnValues._plot;
+        var _owner= event.returnValues._owner;
+        var _ts =  event.returnValues._timestamp;
+        var _amount = event.returnValues._amount;
+        var _drone = event.returnValues._drone;
+        console.log("1_plot:"+_plot);
+        console.log("1_owner:"+_owner);
+        console.log("1_ts:"+_ts);
+        console.log("1_amount:"+_amount);
+        console.log("1_drone:"+_drone);
+        
+       // var _plotInstance = await Cia.searchPlot(_plot);
+       // var _table = document.getElementById("worksTable");
+       // var _row = _table.insertRow(-1);
+      });*/
+
     } catch (error) {
       console.log(error);
       console.error("Could not connect to contract or chain.");
@@ -194,13 +223,31 @@ const App = {
     if (_plotList.selectedIndex >= 0) {
       const _selectedPlot = _plotList.options[_plotList.selectedIndex].value;
       const { getPlot } = App.regProp.methods;
-      const _plot = await getPlot(_selectedPlot).call();
-      console.log(_plot);
-      App.landOwner.methods.publishWork(_plot).send({ from: App.account, gas: 500000 })
+      const _plotAddress = await getPlot(_selectedPlot).call();
+      console.log("publish work:"+_plotAddress+"--> "+ App.account);
+      App.landOwner.methods.publishWork(_plotAddress).send({ from: App.account, gas: 500000 })
       .on('error', (error) => {
         const _error = document.getElementById("status");
         _error.innerHTML = "Transacción incorrecta";
-      });/*
+      });
+      App.landOwner.events.workBided({filter : {_plot : _plotAddress}},function (err, events) { console.log(events); })
+      .on('data', async function (event) {
+        var _plot = event.returnValues._plot;
+        var _owner= event.returnValues._owner;
+        var _ts =  event.returnValues._timestamp;
+        var _amount = event.returnValues._amount;
+        var _drone = event.returnValues._drone;
+        console.log("_plot:"+_plot);
+        console.log("_owner:"+_owner);
+        console.log("_ts:"+_ts);
+        console.log("_amount:"+_amount);
+        console.log("_drone:"+_drone);
+        
+       // var _plotInstance = await Cia.searchPlot(_plot);
+       // var _table = document.getElementById("worksTable");
+       // var _row = _table.insertRow(-1);
+      });
+      /*
       .then(instance => {
         plotInstance = instance;
       });*/

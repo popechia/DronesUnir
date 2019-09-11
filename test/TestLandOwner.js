@@ -33,7 +33,7 @@ contract("Testing Land Owner", async accounts => {
     });
 
     it("Validate complete work", async () => {
-        let resultTX = await _register.completeWork(_addressMOCK,_addressMOCK);
+        let resultTX = await _register.completeWork(accounts[0],_addressMOCK,_addressMOCK);
         truffleAssert.eventEmitted(resultTX, "WorkFinished", (ev) => {
             _sender = ev._owner;
             _plot = ev._plot;
@@ -44,7 +44,7 @@ contract("Testing Land Owner", async accounts => {
 
 
     it("Complete work unpublished", async () => {
-        await truffleAssert.reverts(_register.completeWork(_addressMOCK2,_addressMOCK),"Work not published");
+        await truffleAssert.reverts(_register.completeWork(_addressMOCK,_addressMOCK2,_addressMOCK),"Work not published");
     });
 
 });

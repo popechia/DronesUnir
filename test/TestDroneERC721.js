@@ -1,6 +1,6 @@
 const DroneERC721 = artifacts.require("DroneERC721");
 const FumigationCOMock = artifacts.require("FumigationCOMock");
-
+//const Drone = artifacts.require("Drone");
 const truffleAssert = require("truffle-assertions");
 
 contract("Testing DroneERC721", async accounts => {
@@ -9,6 +9,7 @@ contract("Testing DroneERC721", async accounts => {
   let _droneId;
   let _customer1 = accounts[1];
   let _customer2 = accounts[0];
+  const NEW_POS = 5;
 
   beforeEach(async () => {
     droneFactory = await DroneERC721.new();
@@ -48,7 +49,7 @@ contract("Testing DroneERC721", async accounts => {
     let _company = await FumigationCOMock.new("CO1",{from:_customer1});
     let _balance = await droneFactory.balanceOf(_company.address);    
     assert.equal(_balance.toNumber(), 0, "Incorrect balance");
-    await droneFactory.safeTransferFrom(_customer1,_company.address,_droneId,{from: _customer1});
+    let resultTx = await droneFactory.safeTransferFrom(_customer1,_company.address,_droneId,{from: _customer1});
     _balance = await droneFactory.balanceOf(_company.address);    
     assert.equal(_balance.toNumber(), 1, "Incorrect balance");
     assert.equal(await droneFactory.ownerOf(_droneId),_company.address,"Invalid ownership");
@@ -74,6 +75,17 @@ contract("Testing DroneERC721", async accounts => {
   it ("Balance 0", async () => {
     let _balance = await droneFactory.balanceOf(_customer2);    
     assert.equal(_balance.toNumber(), 0, "Incorrect balance");
+  });
+
+  it ("Move drone allowed", async () => {
+    //await droneFactory.allowWork(_customer2, _droneId, NEW_POS,{from: _customer1});
+    //assert(droneFactory.isAllowed(_customer2,_droneId,NEW_POS));
+    /*let resultTX = await droneFactory.sendDrone(_droneId, NEW_POS);
+    truffleAssert.eventEmitted(resultTX, "DroneMoved", (ev) => {
+      _droneId = ev.droneId;
+      return ev.newPos == NEW_POS;
+    });*/     
+
   });
   
   it ("Destroy drone", async () => {
