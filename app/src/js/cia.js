@@ -5,6 +5,8 @@ import droneArtifact from "../../../build/contracts/Drone.json";
 import landOwnerArtifact from "../../../build/contracts/LandOwner.json";
 import regPropArtifact from "../../../build/contracts/RegProp.json";
 import plotArtifact from "../../../build/contracts/Plot.json";
+import droneCoinArtifact from "../../../build/contracts/DronCoin.json";
+
 
 const Cia = {
   web3: null,
@@ -14,6 +16,7 @@ const Cia = {
   drones: [],
   landOwner: null,
   regProp: null,
+  dronCoin: null,
   publishedWorks: [],
 
   start: async function () {
@@ -23,6 +26,7 @@ const Cia = {
       // get contract instance
       const networkId = await web3.eth.net.getId();
       this.account = window.ethereum.selectedAddress;
+      console.log("this.account:" + this.account);
 
       var deployedNetwork = droneERC721Artifact.networks[networkId];
       this.droneFactory = await new web3.eth.Contract(
@@ -41,12 +45,16 @@ const Cia = {
         deployedNetwork.address,
         { from: this.account },
       );
+      deployedNetwork = droneCoinArtifact.networks[networkId];
+      this.dronCoin = await new web3.eth.Contract(
+        droneCoinArtifact.abi,
+        deployedNetwork.address,
+        { from: this.account },
+      );
 
+      this.companyAddress = "0x8734b1d3F5A02d4E1417343CD35d83c25e62AD37";
+      this.deployCompany(this.companyAddress);
       document.getElementById("factoryNameP").innerHTML = this.droneFactory.options.address;
-      this.companyAddress = "0xC3D7BA6a2FFB01df058F3E87Badb02bc3748aC94";
-      this.showDrones(this.companyAddress);
-      this.showWorks();
-
 
       this.landOwner.events.WorkPublished(function (err, events) { console.log(events.logIndex + "---" + events.blocNumber); })
         .on('data', async function (event) {
@@ -54,34 +62,27 @@ const Cia = {
           var _plotInstance = await Cia.searchPlot(_plot);
           var _table = document.getElementById("worksTable");
           var _owner = event.returnValues._owner;
-          console.log("Owner of the plot:"+_owner);
+          console.log("Owner of the plot:" + _owner);
           var _row = _table.insertRow(-1);
           Cia.showPlotObject(_plotInstance, _row, _owner);
           Cia.landOwner.events.WorkFinished(function (err, event) { console.log(event.transactionIndex); })
             .on('data', function (events) {
               var _worker = events.returnValues._owner;
-              var _plotId = events.returnValues._plot;
-              var _timest = events.returnValues._timestamp;
-              var _droneA = events.returnValues._drone;
               Cia.showDrones(Cia.companyAddress);
+              _plotInstance.methods.getId().call()
+                .then((result) => {
+                  var _plotId = result;
+                  console.log("Eliminar pujas:" + _plotId);
+                  var _bidTable = document.getElementById("worksTable");
+                  for (var r = _bidTable.rows.length - 1; r >= 0; r--) {
+                    if (_bidTable.rows[r].cells[0].innerHTML == _plotId) {
+                      _bidTable.deleteRow(r);
+                    }
+                  }
+                });
             });
 
-          //this.publishedWorks.push(_plot);
-          //this.showWorks();
         });
-      /*
-            this.landOwner.events.WorkFinished(function (err, event) { console.log(event); })
-              .on('data', function (events) {
-                var _worker = events.returnValues._owner;
-                var _plotId = events.returnValues._plot;
-                var _timest = events.returnValues._timestamp;
-                var _droneA = events.returnValues._drone;
-                console.log("Worker:" + _worker);
-                console.log("Plot  :" + _plotId);
-                console.log("Time  :" + _timest);
-                console.log("Drone :" + _droneA);
-                Cia.showDrones(Cia.companyAddress);
-              });*/
     } catch (error) {
       console.log(error);
       console.error("Could not connect to contract or chain.");
@@ -94,7 +95,7 @@ const Cia = {
     });
   },
 
-  bidWork: async function (_plotAddress, _rowIndex,_owner) {
+  bidWork: async function (_plotAddress, _rowIndex, _owner) {
     console.log("BID " + _plotAddress);
     const _plotInstance = await Cia.searchPlot(_plotAddress);
     const _position = await _plotInstance.methods.getPos().call();
@@ -102,9 +103,9 @@ const Cia = {
     var _minDist = await Cia.drones[_selectedDrone].methods.calculateDistanceToPos(_position).call();
     var _status = document.getElementById("status");
     const _idDrone = await Cia.drones[_selectedDrone].methods.getId().call()
-    _status.innerHTML = "(Distancia =" + _minDist + ")"+
-    " -> Presupuestar <button onclick='App.sendDrone(" + _position + "," + _idDrone + ",\"" + _plotAddress + "\"," + _rowIndex +
-     ",\""+_owner+"\")' id='sendDroneBTN'> Dron " + _idDrone + "</button>";
+    _status.innerHTML = "(Distancia =" + _minDist + ")" +
+      " -> Presupuestar <button onclick='App.sendDrone(" + _position + "," + _idDrone + ",\"" + _plotAddress + "\"," + _rowIndex +
+      ",\"" + _owner + "\")' id='sendDroneBTN'> Dron " + _idDrone + "</button>";
   },
 
   nearestDrone: async function (_position) {
@@ -121,7 +122,7 @@ const Cia = {
 
   },
 
-  sendDrone: async function (_position, _idDrone, _plotAddress, _rowIndex,_owner) {
+  sendDrone: async function (_position, _idDrone, _plotAddress, _rowIndex, _owner) {
     const _drone = await Cia.droneFactory.methods.getDrone(_idDrone).call();
     const _droneInstance = await new App.web3.eth.Contract(
       droneArtifact.abi,
@@ -129,33 +130,56 @@ const Cia = {
     );
     const _distance = await _droneInstance.methods.calculateDistanceToPos(_position).call();
     const _bidValue = document.getElementById("bidValueTXT").value;
-    console.log(_bidValue);
-    Cia.landOwner.methods.bidWork(_plotAddress,_bidValue, _drone).send({ from: App.account, gas: 300000 })
-    .on('error', (error) => {
-      const _error = document.getElementById("statusCia");
-      _error.innerHTML = "Transacción incorrecta";
-    })
-    .on('receipt', async (result) => {
-      document.getElementById("worksTable").deleteRow(_rowIndex);
-      document.getElementById("status").innerHTML = null;
-    });
-    /*if (_distance > 0) {
-      _droneInstance.methods.moveTo(_position).send({ from: Cia.account, gas: 300000 })
-        .on('error', console.error)
-        .on('receipt', async (result) => {
-          console.log(result);
-          console.log("====================" + await _droneInstance.methods.getCurrentPos().call());
-        });
-    } else {
-      console.log("Drone ya en posicion, solo fumiga");
-    }
-*/
-    console.log ("OWNER OF PLOT:"+_owner + "---"+_plotAddress+"----->"+_drone);
-    Cia.landOwner.methods.completeWork(_owner,_plotAddress, _drone).send({ from: Cia.account, gas: 300000 })
+    //console.log(_bidValue + "---owner:"+_owner + "----plot:"+ _plotAddress + "---drone:"+_drone);
+    console.log("----ciaAddress:" + App.web3.utils.toChecksumAddress(Cia.companyAddress));
+    await Cia.landOwner.methods.bidWork(App.web3.utils.toChecksumAddress(_plotAddress),
+      _bidValue, App.web3.utils.toChecksumAddress(_drone), App.web3.utils.toChecksumAddress(_owner),
+      App.web3.utils.toChecksumAddress(Cia.companyAddress))
+      .send({ from: App.web3.utils.toChecksumAddress(Cia.account), gas: 300000 })
       .on('error', (error) => {
-        console.log(error);
         const _error = document.getElementById("statusCia");
         _error.innerHTML = "Transacción incorrecta";
+      })
+      .on('receipt', async (result) => {
+        document.getElementById("worksTable").deleteRow(_rowIndex);
+        document.getElementById("status").innerHTML = null;
+        Cia.dronCoin.events.Approval(function (err, event) { console.log(event.returnValues); })
+          .on('data', function (events) {
+            //ACtivar botón de validación de trabajo //
+            //_row.insertCell(6).innerHTML = "<button onclick='App.bidWork(\"" + _plotInstance.options.address + "\"," + _row.rowIndex + ", \"" + _owner + "\")' id='bidWorkBTN'>Pujar</button>";
+
+            var _own = events.returnValues.owner;
+            var _spender = events.returnValues.spender;
+            var _amount = events.returnValues.value;
+            //console.log("Aprobado:" + _amount + " desde : " + _own + " para: " + _spender);
+            if (_spender == Cia.companyAddress) {
+              //console.log("Esta compañia:" + Cia.companyAddress);
+              //console.log("CompleteWork:[" + App.web3.utils.toChecksumAddress(_own) + "][" + App.web3.utils.toChecksumAddress(_plotAddress) + "]");
+              Cia.landOwner.methods.completeWork(App.web3.utils.toChecksumAddress(_own),
+                App.web3.utils.toChecksumAddress(_plotAddress), App.web3.utils.toChecksumAddress(_drone))
+                .send({ from: App.web3.utils.toChecksumAddress(Cia.account), gas: 300000 })
+                .on('error', (error) => {
+                  console.log(error);
+                  const _error = document.getElementById("statusCia");
+                  _error.innerHTML = "Transacción incorrecta";
+                })
+                .on('receipt', (result) => {
+                  if (_distance > 0) {
+                    _droneInstance.methods.moveTo(_position).send({ from: Cia.account, gas: 300000 })
+                      .on('error', console.error)
+                      .on('receipt', async (result) => {
+                        console.log(result);
+                      });
+                  } else {
+                    console.log("Drone ya en posicion, solo fumiga");
+                  }
+                  Cia.dronCoin.methods.transferFrom(App.web3.utils.toChecksumAddress(_own),
+                    App.web3.utils.toChecksumAddress(_spender), _bidValue)
+                    .send({ from: App.web3.utils.toChecksumAddress(App.account), gas: 300000 });
+                });
+            }
+          });
+
       });
 
   },
@@ -186,7 +210,7 @@ const Cia = {
     _nearestDroneElement.innerHTML = await Cia.drones[_selectedDrone].methods.getId().call();
     _distanceToPosElement.innerHTML = await Cia.drones[_selectedDrone].methods.calculateDistanceToPos(_position).call();
 
-    _row.insertCell(6).innerHTML = "<button onclick='App.bidWork(\"" + _plotInstance.options.address + "\"," + _row.rowIndex + ", \""+_owner+"\")' id='bidWorkBTN'>Pujar</button>";
+    _row.insertCell(6).innerHTML = "<button onclick='App.bidWork(\"" + _plotInstance.options.address + "\"," + _row.rowIndex + ", \"" + _owner + "\")' id='bidWorkBTN'>Pujar</button>";
   },
 
 
@@ -200,6 +224,8 @@ const Cia = {
       arguments: [_name]
     }).send({ from: Cia.account, gas: 1000000 }).then((instance) => { fumigationCOInstance = instance });
     Cia.companyAddress = fumigationCOInstance.options.address;
+    Cia.showDrones(Cia.companyAddress);
+    Cia.showWorks();
     return fumigationCOInstance.options.address;
   },
 
@@ -212,12 +238,19 @@ const Cia = {
     return fumigationCOInstance;
   },
 
-  deployCO: async function () {
-    const _addressCo = document.getElementById("addressCO").value;
+  deployCompany: async function (_addressCo) {
     var _instanceCO = await Cia.deployExistingCompany(_addressCo);
-    Cia.companyAddress = _instanceCO.options.address;
     document.getElementsByClassName("nombreCO")[0].innerHTML = await _instanceCO.methods.getName().call();
     document.getElementById("generateCOBTN").disabled = true;
+    document.getElementById("saldoCO").innerHTML = await Cia.dronCoin.methods.balanceOf(_addressCo).call();
+    Cia.showDrones(Cia.companyAddress);
+    Cia.showWorks();
+  },
+
+
+  deployCO: async function () {
+    const _addressCo = document.getElementById("addressCO").value;
+    this.deployCompany(_addressCo);
   },
 
   generateCO: async function () {
@@ -226,12 +259,17 @@ const Cia = {
     console.log("Generated company:" + _addrCO);
     document.getElementsByClassName("nombreCO")[0].innerHTML = _nameCO;
     document.getElementById("generateCOBTN").disabled = true;
+    Cia.dronCoin.methods.balanceOf(_addrCO).call().then((result) => {
+      console.log("===============>" + result);
+    });
   },
 
 
   showDrones: async function (_owner) {
     const { getDronesOwner } = Cia.droneFactory.methods;
     var _drones = [];
+    Cia.drones = [];
+    console.log("Drones:" + _owner);
     _drones = await getDronesOwner(_owner).call();
     document.getElementById("numberDrones").innerHTML = _drones.length;
     const _dronesList = document.getElementById("dronesList");
@@ -279,6 +317,7 @@ window.App = Cia;
 
 window.ethereum.on('accountsChanged', async function (accounts) {
   Cia.account = window.ethereum.selectedAddress;
+  console.log("Cia.account:" + Cia.account);
 });
 
 window.addEventListener("load", function () {

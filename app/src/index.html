@@ -33,7 +33,7 @@
         </td>
         <td>
           Posición:<input type="text" id="posTXT" placeholder="e.g. 10" />
-        </td>        
+        </td>
       </tr>
       <tr>
         <td colspan="3">
@@ -88,7 +88,7 @@
             </th>
             <th style="padding-left: 10px; padding-right: 10px; text-align: right;">
               Posicion
-            </th>            
+            </th>
           </tr>
 
           <tr>
@@ -106,10 +106,10 @@
             </td>
             <td style="padding-left: 10px; padding-right: 10px; text-align: right;">
               <p id="plotPos"></p>
-            </td>            
+            </td>
           </tr>
           <tr>
-            <td colspan="5" style= "text-align: center;">
+            <td colspan="5" style="text-align: center;">
               <button onclick="App.fumigate()" id="transferPlotBTN">Solicitar Fummigación</button>
             </td>
           </tr>
@@ -117,8 +117,15 @@
       </td>
     </tr>
   </table>
-  <a href="cia.html">cia</a>
-  <p id="status" style= "color: red; "></p>
+  <div id="panelBid">
+    <table style="border: 1px solid black" id="tableBid">
+      <caption>
+        <h2>PUJAS ofertadas</h2>
+      </caption>
+    </table>
+  </div>
+
+  <p id="status" style="color: red; "></p>
   <!--<script src="js/index.bundle.js" charset="utf-8"></script>-->
 </body>
 

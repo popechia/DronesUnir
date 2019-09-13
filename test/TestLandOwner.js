@@ -27,6 +27,15 @@ contract("Testing Land Owner", async accounts => {
             return _plot == _addressMOCK;
         });
     });*/
+    it ("Bid Work", async() => {
+        let resultTX = await _register.bidWork(_addressMOCK,100, _addressMOCK,accounts[0],accounts[0]);
+        truffleAssert.eventEmitted(resultTX, "WorkBided", (ev) => {
+            _sender = ev._owner;
+            _plot = ev._plot;
+            _drone = ev._drone;
+            return _plot == _addressMOCK;
+        });
+    });
 
     it("Duplicated work drone unauthorized", async () => {
         await truffleAssert.reverts(_register.publishWork(_addressMOCK),"Work already published");
@@ -41,7 +50,6 @@ contract("Testing Land Owner", async accounts => {
             return _plot == _addressMOCK;
         });
     });
-
 
     it("Complete work unpublished", async () => {
         await truffleAssert.reverts(_register.completeWork(_addressMOCK,_addressMOCK2,_addressMOCK),"Work not published");
